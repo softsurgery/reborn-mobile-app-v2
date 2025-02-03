@@ -19,12 +19,13 @@ import { Chat } from "./chat/Chat";
 import { cn } from "~/lib/utils";
 import { Button } from "./ui/button";
 import { IconWithTheme } from "~/lib/IconWithTheme";
+import { HomePage } from "./home/HomePage";
 
 export default function Application() {
   const [value, setValue] = React.useState("account");
 
   const tabs = [
-    { value: "home", icon: Home, title: "Home", component: <></> },
+    { value: "home", icon: Home, title: "Home", component: <HomePage /> },
     {
       value: "chat",
       icon: MessageSquareText,
