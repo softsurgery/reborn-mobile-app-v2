@@ -41,7 +41,6 @@ export const StoragePreferenceCard = ({
         </View>
         <Button variant="outline" onPress={onClearCache}>
           <Trash2 size={16} className="mr-2" />
-          Clear
         </Button>
       </View>
     </View>
