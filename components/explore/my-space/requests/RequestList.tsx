@@ -9,6 +9,7 @@ import { cn } from "~/lib/utils";
 import { RefreshControl, View } from "react-native";
 import { Text } from "~/components/ui/text";
 import { useRequestSystem } from "~/hooks/content/job/useInfiniteJobRequests";
+import { useDebounce } from "~/hooks/useDebounce";
 
 interface RequestsListProps {
   className?: string;
@@ -36,8 +37,12 @@ export const RequestsList = ({
     variant,
   });
 
-  const isPending =
+  const actuallyPending =
     isRequestsPending || isRefetching || isFetchingNextPage || searching;
+
+  const { loading: debouncedLoading } = useDebounce(actuallyPending, 300);
+  
+  const isPending = actuallyPending || debouncedLoading;
 
   const renderItem = React.useCallback(
     ({ item }: { item: ResponseJobRequestDto }) =>
