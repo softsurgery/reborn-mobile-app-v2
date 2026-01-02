@@ -3,7 +3,6 @@ import {
   Text,
   Modal,
   TouchableOpacity,
-  Switch,
   ScrollView,
   KeyboardAvoidingView,
 } from "react-native";
@@ -12,6 +11,7 @@ import { Icon } from "~/components/ui/icon";
 import { useState, useEffect } from "react";
 import { storageManager } from "~/lib/storage-manager";
 import { playTone } from "~/lib/tone-generator";
+import { Switch } from "~/components/ui/switch";
 
 interface SoundSettingsModalProps {
   visible: boolean;
@@ -159,13 +159,12 @@ export function SoundSettingsModal({
                       Désactiver tous les sons de notification
                     </Text>
                   </View>
-                  <Switch
-                    value={soundSettings.notificationMuted}
-                    onValueChange={(v) =>
+                  <Switch 
+                    checked={soundSettings.notificationMuted}
+                    onCheckedChange={(v) =>
                       updateSettings({ ...soundSettings, notificationMuted: v })
                     }
-                    trackColor={{ false: "#52525b", true: "#ef4444" }}
-                    thumbColor={soundSettings.notificationMuted ? "#ffffff" : "#f4f3f4"}
+                   className="bg-zinc-600 data-[checked=true]:bg-red-500"
                   />
                 </View>
               </View>
@@ -255,12 +254,11 @@ export function SoundSettingsModal({
                     </Text>
                   </View>
                   <Switch
-                    value={soundSettings.callMuted}
-                    onValueChange={(v) =>
+                    checked={soundSettings.callMuted}
+                    onCheckedChange={(v) =>
                       updateSettings({ ...soundSettings, callMuted: v })
                     }
-                    trackColor={{ false: "#52525b", true: "#ef4444" }}
-                    thumbColor={soundSettings.callMuted ? "#ffffff" : "#f4f3f4"}
+                      className="bg-zinc-600 data-[checked=true]:bg-red-500"
                   />
                 </View>
               </View>

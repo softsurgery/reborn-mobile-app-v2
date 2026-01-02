@@ -75,7 +75,7 @@ export const RequestsList = ({
       onScrollEndDrag={() => setDragging(false)}
       refreshControl={
         <RefreshControl
-          refreshing={isRefetching}
+         refreshing={isRefetching}
           onRefresh={refetchRequests}
           tintColor="transparent"
           colors={["transparent"]}
