@@ -166,23 +166,6 @@ export default function MainLayout() {
         }}
       />
 
-      {/* Chat *********************************************************************************************************************/}
-      <Stack.Screen
-        name="chat/conversation"
-        options={{
-          title: "",
-          headerShown: false,
-        }}
-      />
-
-      <Stack.Screen
-        name="chat/conversation-details"
-        options={{
-          title: "",
-          headerShown: false,
-        }}
-      />
-
       {/* Explore *********************************************************************************************************************/}
 
       <Stack.Screen
@@ -391,6 +374,42 @@ export default function MainLayout() {
           title: "Verify Email",
           headerShown: false,
           animation: "slide_from_right",
+        }}
+      />
+      {/* Chat  ********************************************************************************************* */}
+      <Stack.Screen
+        name="chat"
+        options={{
+          title: "chat",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="chat/conversation"
+        options={{
+          title: "",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="chat/conversation-details"
+        options={{
+          title: "conversationDetails",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="chat/report-conversation"
+        options={{
+          title: "reportConversation",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="chat/conversation-resource-details"
+        options={{
+          title: "mediaFilesLinks",
+          headerShown: false,
         }}
       />
       {/* Test */}

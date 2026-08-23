@@ -5,8 +5,8 @@
 // Generate only one thumbnail at a time because a single VideoPlayer instance is shared.
 // Queue thumbnail requests until the player is available.
 
-import { AppVideoSource } from "@/components/shared/VideoPreview";
 import { Image } from "expo-image";
+import type { AppVideoSource } from "@/components/shared/VideoPreview";
 import type { ImageSource } from "expo-image";
 import type { VideoPlayer } from "expo-video";
 

@@ -25,6 +25,9 @@ import arHome from "./locales/ar/home.json";
 import enFinance from "./locales/en/finance.json";
 import frFinance from "./locales/fr/finance.json";
 import arFinance from "./locales/ar/finance.json";
+import enChat from "./locales/en/chat.json";
+import frChat from "./locales/fr/chat.json";
+import arChat from "./locales/ar/chat.json";
 
 const resources = {
   en: {
@@ -34,6 +37,7 @@ const resources = {
     menu: enMenu,
     home: enHome,
     finance: enFinance,
+    chat: enChat,
   },
   fr: {
     common: frCommon,
@@ -42,6 +46,7 @@ const resources = {
     menu: frMenu,
     home: frHome,
     finance: frFinance,
+    chat: frChat,
   },
   ar: {
     common: arCommon,
@@ -50,6 +55,7 @@ const resources = {
     menu: arMenu,
     home: arHome,
     finance: arFinance,
+    chat: arChat,
   },
 };
 
@@ -61,8 +67,7 @@ i18n.use(initReactI18next).init({
   resources,
   lng: languageCode,
   fallbackLng: "en",
-  ns: ["common", "notifications", "settings", "menu", "home"],
-  ns: ["common", "notifications", "settings", "menu", "finance"],
+  ns: ["common", "notifications", "settings", "menu", "home", "finance", "chat"],
   defaultNS: "common",
   interpolation: { escapeValue: false },
 });
