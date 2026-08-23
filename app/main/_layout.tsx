@@ -377,13 +377,7 @@ export default function MainLayout() {
         }}
       />
       {/* Chat  ********************************************************************************************* */}
-      <Stack.Screen
-        name="chat"
-        options={{
-          title: "chat",
-          headerShown: false,
-        }}
-      />
+
       <Stack.Screen
         name="chat/conversation"
         options={{
