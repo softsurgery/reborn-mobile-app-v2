@@ -19,7 +19,6 @@ import "../global.css";
 import "../i18n";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Toaster } from "sonner-native";
-import { KeyboardProvider } from "react-native-keyboard-controller";
 import { useColorPalette } from "@/hooks/useColorPalette";
 import { asyncStoragePersister, queryClient } from "@/lib/queryClient";
 import { LoaderProvider } from "@/contexts/LoaderContext";
@@ -27,6 +26,7 @@ import { usePreferencePersistStore } from "@/hooks/stores/usePreferencePersistSt
 import { VideoThumbnailGeneratorHost } from "@/components/shared/VideoThumbnailGeneratorHost";
 import { NotificationType } from "@/types";
 import { NotificationContext } from "@/contexts/NotificationContext";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -153,16 +153,17 @@ export default function RootLayout() {
           maxAge: 1000 * 60 * 60 * 24,
         }}
       >
-        <SafeAreaProvider>
-          <LoaderProvider>
-            <RootLayoutContent
-              colorScheme={colorScheme ?? "light"}
-              palette={palette}
-            />
-          </LoaderProvider>
-        </SafeAreaProvider>
+        <KeyboardProvider statusBarTranslucent>
+          <SafeAreaProvider>
+            <LoaderProvider>
+              <RootLayoutContent
+                colorScheme={colorScheme ?? "light"}
+                palette={palette}
+              />
+            </LoaderProvider>
+          </SafeAreaProvider>
+        </KeyboardProvider>
       </PersistQueryClientProvider>
     </ThemeProvider>
   );
 }
-
