@@ -9,8 +9,8 @@ import { JobStatistics } from "./JobStatistics";
 import { useColorPalette } from "@/hooks/useColorPalette";
 import { AppHeaderBack } from "@/components/shared/AppHeaderBack";
 import { createMaterialTopTabNavigator } from "expo-router/js-top-tabs";
-import { RequestsList } from "@/components/home/my-space/requests/RequestList";
 import { JobActions } from "./JobActions";
+import { RequestsList } from "@/components/jobs/requests/RequestList";
 
 interface JobManagementInstanceProps {
   id: string;
