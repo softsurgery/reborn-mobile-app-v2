@@ -1,4 +1,4 @@
-import { Tabs, useSegments } from "expo-router";
+import { Tabs } from "expo-router";
 import * as Haptics from "expo-haptics";
 import {
   Home,
@@ -10,39 +10,15 @@ import {
 import { Button } from "~/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { useRTL } from "~/hooks/useRTL";
-import { ColorValue, GestureResponderEvent, Pressable, View } from "react-native";
+import { ColorValue, GestureResponderEvent } from "react-native";
 import { useColorPalette } from "@/hooks/useColorPalette";
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from "react-native-reanimated";
-import React from "react";
 import { Icon } from "@/components/ui/icon";
 import { ActionSheetRef } from "react-native-actions-sheet";
 import { ProfileQuickMenuActionSheet } from "~/components/profile/ProfileQuickMenuActionSheet";
 import { MenuTabAvatar } from "~/components/shared/MenuTabAvatar";
 import { BottomTabBarButtonProps } from "expo-router/build/react-navigation/bottom-tabs";
-
-interface VibratingTabButtonProps extends BottomTabBarButtonProps {
-  onLongPress?: () => void;
-}
-
-interface TabConfig {
-  name: string;
-  title?: string;
-  icon?: LucideIcon;
-  iconSize?: number;
-  customButton?: (props: BottomTabBarButtonProps) => React.ReactNode;
-  customIcon?: (props: {
-    focused: boolean;
-    color: ColorValue;
-    size: number;
-  }) => React.ReactNode;
-  hideLabel?: boolean;
-  onLongPress?: () => void;
-}
+import React from "react";
+import TabButton, { TabButtonProps } from "@/components/shared/TabButton";
 
 export default function TabLayout() {
   const { palette } = useColorPalette();
@@ -59,79 +35,7 @@ export default function TabLayout() {
     };
   };
 
-  const VibratingTabButton = ({
-    accessibilityState,
-    children,
-    onPress,
-    onLongPress,
-  }: VibratingTabButtonProps) => {
-    const focused = accessibilityState?.selected;
-    const scale = useSharedValue(focused ? 1 : 0);
-
-    React.useEffect(() => {
-      scale.value = withSpring(focused ? 1 : 0, {
-        damping: 15,
-        stiffness: 140,
-      });
-    }, [focused]);
-
-    const animatedStyle = useAnimatedStyle(() => ({
-      transform: [
-        {
-          scale: interpolate(scale.value, [0, 1], [1, 1.08]),
-        },
-      ],
-    }));
-
-    const indicatorStyle = useAnimatedStyle(() => ({
-      opacity: scale.value,
-      transform: [
-        {
-          scaleX: withSpring(focused ? 1 : 0.4),
-        },
-      ],
-    }));
-
-    const handlePress = async (e: GestureResponderEvent) => {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      onPress?.(e as unknown as React.MouseEvent<HTMLAnchorElement, MouseEvent>);
-    };
-
-    const handleLongPress = async () => {
-      if (onLongPress) {
-        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-        onLongPress();
-      }
-    };
-
-    return (
-      <Pressable
-        onPress={handlePress}
-        onLongPress={handleLongPress}
-        delayLongPress={300}
-        className="mt-2"
-      >
-        <Animated.View
-          style={animatedStyle}
-          className="items-center justify-center gap-1"
-        >
-          {children}
-
-          <Animated.View
-            style={indicatorStyle}
-            className="mt-1 h-1 w-8 rounded-full"
-          >
-            <View
-              style={{ backgroundColor: palette.primary }}
-              className="h-full w-full rounded-full"
-            />
-          </Animated.View>
-        </Animated.View>
-      </Pressable>
-    );
-  };
-
-  const tabsConfig: TabConfig[] = [
+  const tabsConfig: TabButtonProps[] = [
     {
       name: "explore",
       title: t("screens.explore"),
@@ -169,10 +73,14 @@ export default function TabLayout() {
     {
       name: "menu",
       title: t("screens.menu"),
-      customIcon: ({ color, focused }: { color: ColorValue; focused: boolean }) => (
-        <MenuTabAvatar color={color} focused={focused} />
-      ),
-      // onLongPress: () => actionSheetRef.current?.show(),
+      customIcon: ({
+        color,
+        focused,
+      }: {
+        color: ColorValue;
+        focused: boolean;
+      }) => <MenuTabAvatar color={color} focused={focused} />,
+      onLongPress: () => actionSheetRef.current?.show(),
     },
   ];
 
@@ -214,30 +122,30 @@ export default function TabLayout() {
               title: tab.title,
               tabBarButton: tab.customButton
                 ? tab.customButton
-                : (props: BottomTabBarButtonProps) => (
-                    <VibratingTabButton
+                : (props) => (
+                    <TabButton
                       {...props}
+                      name={tab.name}
                       onLongPress={tab.onLongPress}
                     />
                   ),
               tabBarIcon: tab.customIcon
-                ? (props: { focused: boolean; color: ColorValue; size: number }) =>
-                    tab.customIcon!(props)
+                ? ({ color, focused }) =>
+                    tab.customIcon!({ color, focused, size: 28 })
                 : tab.icon
-                ? ({ color, focused }: { color: ColorValue; focused: boolean }) => (
-                    <Icon
-                      as={tab.icon as LucideIcon}
-                      size={focused ? 28 : 24}
-                      color={color as string}
-                    />
-                  )
-                : undefined,
+                  ? ({ color, focused }) => (
+                      <Icon
+                        as={tab.icon as LucideIcon}
+                        size={focused ? 28 : 24}
+                        color={color}
+                      />
+                    )
+                  : undefined,
               ...(tab.hideLabel ? { tabBarLabel: () => null } : {}),
             }}
           />
         ))}
       </Tabs>
-
       <ProfileQuickMenuActionSheet ref={actionSheetRef} />
     </>
   );
