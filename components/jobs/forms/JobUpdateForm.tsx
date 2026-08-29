@@ -25,7 +25,7 @@ import {
   imagesJobValidationSchemas,
 } from "@/types/validations/job.validation";
 import { useUploadMutation } from "@/hooks/content/useUploadMutation";
-import { Upload } from "@/types/upload";
+import { UpdateGenericUploadDto, Upload } from "@/types/upload";
 import { useJob } from "@/hooks/content/job/useJob";
 import { useUpdateJobFormStructure } from "./useUpdateJobFormStructure";
 import { useServerImages } from "@/hooks/content/useServerImages";
@@ -168,6 +168,7 @@ export const JobUpdateForm = ({ className, id }: JobUpdateFormProps) => {
     mutationFn: (job: UpdateJobDto) => api.job.update(id, job),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["job", id] });
       jobStore.reset();
       toast.success("Job updated successfully");
       router.push("/main/(tabs)");
@@ -202,11 +203,16 @@ export const JobUpdateForm = ({ className, id }: JobUpdateFormProps) => {
   const handleSubmit = () => {
     const uploads = jobStore.images
       .filter((img) => img.serverId)
-      .map((img, index) => ({
-        id: img.id as number,
-        uploadId: img.serverId as number,
-        order: index,
-      }));
+      .map((img, index) => {
+        let payload: UpdateGenericUploadDto = {
+          uploadId: img.serverId as number,
+          order: index,
+        };
+        if (typeof img.id === "number") {
+          payload.id = img.id;
+        }
+        return payload;
+      });
 
     const data = {
       ...jobStore.updateDto,
