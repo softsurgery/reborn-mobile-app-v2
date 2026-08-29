@@ -30,7 +30,7 @@ import { ProfileAvatar } from "./ProfileAvatar";
 import { ProfileCover } from "./ProfileCover";
 import { toast } from "sonner-native";
 import { BaseProfileSkeleton } from "./BaseProfileSkeleton";
-import { ProfileSection, RenderSection } from "./sections/RenderSection";
+
 import { ExperienceInstance } from "./forms/experience/ExperienceInstance";
 import { EducationInstance } from "./forms/education/EducationInstance";
 import { ProfileStat } from "./ProfileStat";
@@ -218,44 +218,7 @@ export const InspectBaseProfile = ({
     };
   }, []);
 
-  const profileSections: ProfileSection[] = React.useMemo(
-    () => [
-      {
-        key: "experience",
-        title: t("menu.tabs.career.experience.title"),
-        data: experiences as unknown[],
-        editable: currentUser?.id === user?.id,
-        userId: user?.id,
-        renderItem: (experience: ResponseExperienceDto) => (
-          <ExperienceInstance experience={experience} />
-        ),
-      },
-      {
-        key: "education",
-        title: t("menu.tabs.career.education.title"),
-        data: educations as unknown[],
-        editable: currentUser?.id === user?.id,
-        userId: user?.id,
-        renderItem: (education: ResponseEducationDto) => (
-          <EducationInstance education={education} />
-        ),
-      },
-      {
-        key: "skills",
-        title: t("menu.skills.title"),
-        data: skills?.filter((skill) =>
-          userSkills?.some((id) => id === skill.id),
-        ) as unknown[],
-        editable: currentUser?.id === user?.id,
-        renderItem: (skill: ResponseRefParamDto) => (
-          <View className="rounded-full border border-border px-3 py-1.5">
-            <Text className="text-sm font-semibold">{skill.label}</Text>
-          </View>
-        ),
-      },
-    ],
-    [experiences, educations, skills, userSkills, currentUser?.id, user?.id, t],
-  );
+
 
   const onRefresh = async () => {
     await Promise.allSettled([
@@ -385,7 +348,10 @@ export const InspectBaseProfile = ({
           currentUser={currentUser}
           onRefresh={onRefresh}
           refreshing={refreshing}
-          profileSections={profileSections}
+          experiences={experiences as any}
+          educations={educations as any}
+          skills={skills as any}
+          userSkills={userSkills as any}
           handleScroll={handleScroll}
           scrollRef={scrollRef}
           scrollToTop={scrollToTop}
