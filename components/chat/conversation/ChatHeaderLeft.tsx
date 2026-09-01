@@ -58,9 +58,11 @@ export const ChatHeaderLeft = ({
           <Text className="font-semibold text-sm truncate" numberOfLines={1}>
             {identifier}
           </Text>
-          <Text className="text-xs text-muted-foreground" numberOfLines={1}>
-            {lastSeen}
-          </Text>
+          {!!lastSeen && (
+            <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+              {lastSeen}
+            </Text>
+          )}
         </View>
       </Pressable>
     </View>
