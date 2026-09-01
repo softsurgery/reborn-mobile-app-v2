@@ -6,17 +6,24 @@ import {
   NumberFieldProps,
   SliderFieldProps,
   TextareaFieldProps,
+  CustomFieldProps,
 } from "@/components/shared/form-builder/types";
 import { ResponseJobDto } from "@/types";
+import { SegmentedToggle } from "@/components/shared/SegmentedToggle";
+import React from "react";
 
 interface UseJobApplyFormStructureProps {
   store: JobApplyStore;
   job?: ResponseJobDto;
+  priceType: "less" | "greater";
+  setPriceType: (type: "less" | "greater") => void;
 }
 
 export const useJobApplyFormStructure = ({
   store,
   job,
+  priceType,
+  setPriceType,
 }: UseJobApplyFormStructureProps) => {
   const messageField: Field<TextareaFieldProps> = {
     id: "job-apply-message",
@@ -79,6 +86,33 @@ export const useJobApplyFormStructure = ({
     },
   };
 
+  const toggleField: Field<CustomFieldProps> = {
+    id: "job-apply-price-type",
+    label: "",
+    variant: FieldVariant.CUSTOM,
+    props: {
+      render: () => (
+        <SegmentedToggle
+          value={priceType}
+          onChange={(val) => setPriceType(val as "less" | "greater")}
+          options={[
+            { label: "Less Price", value: "less" },
+            { label: "Greater Price", value: "greater" },
+          ]}
+        />
+      ),
+    },
+  };
+
+  const pricingRows = [
+    { id: 2, fields: [toggleField] },
+    { id: 3, fields: [proposedPriceField] },
+  ];
+
+  if (priceType === "less") {
+    pricingRows.push({ id: 4, fields: [sliderField] });
+  }
+
   const structure: FormStructure = {
     title: "",
     isHeaderVisible: false,
@@ -91,10 +125,7 @@ export const useJobApplyFormStructure = ({
       {
         title: "Pricing",
         description: "Set your terms for this job.",
-        rows: [
-          { id: 2, fields: [proposedPriceField] },
-          { id: 3, fields: [sliderField] },
-        ],
+        rows: pricingRows,
       },
     ],
   };

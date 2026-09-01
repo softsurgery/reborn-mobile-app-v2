@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 import { RequestsList } from "./RequestList";
 import { StableSafeAreaView } from "@/components/shared/stables/StableSafeAreaView";
 import { router } from "expo-router";
-import { createMaterialTopTabNavigator } from "expo-router/js-top-tabs";
 import { ApplicationHeader } from "@/components/shared/AppHeader";
+import { createMaterialTopTabNavigator } from "expo-router/js-top-tabs";
 import { useColorPalette } from "@/hooks/useColorPalette";
 
 type TabType = "incoming" | "outgoing";

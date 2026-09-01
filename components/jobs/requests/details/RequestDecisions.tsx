@@ -1,7 +1,7 @@
 import React from "react";
 import { View } from "react-native";
 import { router } from "expo-router";
-import ActionSheet, { type ActionSheetRef } from "react-native-actions-sheet";
+import { type ActionSheetRef } from "react-native-actions-sheet";
 import { Check, Clock, Mail, X, Pencil } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { Text } from "@/components/ui/text";
@@ -13,27 +13,20 @@ import { DeclineJobRequestActionSheet } from "./action-sheets/DeclineJobRequestA
 import { WaitlistJobRequestActionSheet } from "./action-sheets/WaitlistJobRequestActionSheet";
 import { WithdrawJobRequestActionSheet } from "./action-sheets/WithdrawJobRequestActionSheet";
 import { ActionPressable } from "@/components/shared/ActionPressable";
-import { useColorPalette } from "@/hooks/useColorPalette";
-import { hslToHex } from "@/lib/theme";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-interface RequestDecisionsActionSheetProps {
+interface RequestDecisionsProps {
   className?: string;
   request: ResponseJobRequestDto;
   isIncoming: boolean;
   refetch: () => void;
 }
 
-export const RequestDecisionsActionSheet = React.forwardRef<
-  ActionSheetRef,
-  RequestDecisionsActionSheetProps
->(({ className, request, isIncoming, refetch }, ref) => {
-  const { palette } = useColorPalette();
-  const innerRef = React.useRef<ActionSheetRef>(null);
-  const insets = useSafeAreaInsets();
-
-  React.useImperativeHandle(ref, () => innerRef.current as ActionSheetRef);
-
+export const RequestDecisions = ({
+  className,
+  request,
+  isIncoming,
+  refetch,
+}: RequestDecisionsProps) => {
   const approveSheetRef = React.useRef<ActionSheetRef>(null);
   const rejectSheetRef = React.useRef<ActionSheetRef>(null);
   const waitlistSheetRef = React.useRef<ActionSheetRef>(null);
@@ -61,11 +54,6 @@ export const RequestDecisionsActionSheet = React.forwardRef<
   const isIncomingActionPending =
     isApprovePending || isRejectPending || isWaitlistPending;
 
-  const closeAndRun = (action: () => void) => {
-    innerRef.current?.hide();
-    setTimeout(action, 300);
-  };
-
   const actions = {
     incoming: [
       {
@@ -79,7 +67,7 @@ export const RequestDecisionsActionSheet = React.forwardRef<
         },
         onPress: () => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          closeAndRun(() => approveSheetRef.current?.show());
+          approveSheetRef.current?.show();
         },
         disabled: isIncomingActionPending,
         isPending: isApprovePending,
@@ -96,7 +84,7 @@ export const RequestDecisionsActionSheet = React.forwardRef<
         },
         onPress: () => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          closeAndRun(() => waitlistSheetRef.current?.show());
+          waitlistSheetRef.current?.show();
         },
         disabled: isIncomingActionPending,
         isPending: isWaitlistPending,
@@ -113,7 +101,7 @@ export const RequestDecisionsActionSheet = React.forwardRef<
         },
         onPress: () => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          closeAndRun(() => rejectSheetRef.current?.show());
+          rejectSheetRef.current?.show();
         },
         disabled: isIncomingActionPending,
         isPending: isRejectPending,
@@ -132,11 +120,9 @@ export const RequestDecisionsActionSheet = React.forwardRef<
         },
         onPress: () => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          closeAndRun(() => {
-            router.push({
-              pathname: "/main/my-space/request-update",
-              params: { id: request.id },
-            });
+          router.push({
+            pathname: "/main/my-space/request-update",
+            params: { id: request.id },
           });
         },
         disabled: false,
@@ -156,7 +142,7 @@ export const RequestDecisionsActionSheet = React.forwardRef<
         },
         onPress: () => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          closeAndRun(() => cancelSheetRef.current?.show());
+          cancelSheetRef.current?.show();
         },
         disabled: isCancelPending,
         isPending: isCancelPending,
@@ -170,68 +156,51 @@ export const RequestDecisionsActionSheet = React.forwardRef<
     : actions.outgoing.filter((a) => !a.hidden);
 
   return (
-    <>
-      <ActionSheet
-        ref={innerRef}
-        containerStyle={{
-          backgroundColor: hslToHex(palette.background),
-        }}
-        indicatorStyle={{
-          backgroundColor: hslToHex(palette.muted),
-        }}
-        gestureEnabled={true}
-      >
-        <View 
-          className={cn("px-4 pt-2", className)}
-          style={{ paddingBottom: Math.max(insets.bottom, 24) }}
-        >
-          <Text className="text-base font-bold uppercase tracking-widest text-muted-foreground mb-4 px-1">
-            Application Decisions
-          </Text>
-          <View className="flex flex-col overflow-hidden">
-            {request.status === JobRequestStatus.Pending ||
-            request.status === JobRequestStatus.Waitlist ? (
-              <React.Fragment>
-                {activeActions.map((action, index) => (
-                  <ActionPressable
-                    key={action.id}
-                    title={action.title}
-                    description={action.description}
-                    IconComp={action.IconComp}
-                    classNames={{ ...action.classNames, wrapper: cn("py-4") }}
-                    onPress={action.onPress}
-                    disabled={action.disabled}
-                    isPending={action.isPending}
-                    isLast={index === activeActions.length - 1}
-                  />
-                ))}
-              </React.Fragment>
-            ) : request.status === JobRequestStatus.Approved ? (
+    <View className={cn(className)}>
+      <Text className="text-base font-bold uppercase tracking-widest text-muted-foreground mb-2 px-1">
+        Decisions
+      </Text>
+      <View className="flex flex-col overflow-hidden">
+        {request.status === JobRequestStatus.Pending ||
+        request.status === JobRequestStatus.Waitlist ? (
+          <React.Fragment>
+            {activeActions.map((action, index) => (
               <ActionPressable
-                title="Send Direct Message"
-                description="Start conversation with counterparty"
-                IconComp={Mail}
-                classNames={{
-                  icon: "bg-primary/10",
-                  title: "text-primary font-bold",
-                }}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  innerRef.current?.hide();
-                  router.push("/main/(tabs)/chat");
-                }}
-                isLast
+                key={action.id}
+                title={action.title}
+                description={action.description}
+                IconComp={action.IconComp}
+                classNames={{ ...action.classNames, wrapper: cn("py-4") }}
+                onPress={action.onPress}
+                disabled={action.disabled}
+                isPending={action.isPending}
+                isLast={index === activeActions.length - 1}
               />
-            ) : (
-              <View className="w-full py-4 items-center justify-center">
-                <Text className="text-sm font-semibold text-center text-destructive">
-                  This job application has been declined.
-                </Text>
-              </View>
-            )}
+            ))}
+          </React.Fragment>
+        ) : request.status === JobRequestStatus.Approved ? (
+          <ActionPressable
+            title="Send Direct Message"
+            description="Start conversation with counterparty"
+            IconComp={Mail}
+            classNames={{
+              icon: "bg-primary/10",
+              title: "text-primary font-bold",
+            }}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              router.push("/main/(tabs)/chat");
+            }}
+            isLast
+          />
+        ) : (
+          <View className="w-full py-4 items-center justify-center">
+            <Text className="text-sm font-semibold text-center text-destructive">
+              This job application has been declined.
+            </Text>
           </View>
-        </View>
-      </ActionSheet>
+        )}
+      </View>
 
       <ApproveJobRequestActionSheet
         ref={approveSheetRef}
@@ -264,6 +233,6 @@ export const RequestDecisionsActionSheet = React.forwardRef<
         onClose={() => cancelSheetRef.current?.hide()}
         isPending={isCancelPending}
       />
-    </>
+    </View>
   );
-});
+};

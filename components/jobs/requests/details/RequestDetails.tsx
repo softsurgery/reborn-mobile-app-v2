@@ -27,9 +27,7 @@ import { RequestBanner } from "./RequestBanner";
 import { RequestUserEntry } from "./RequestUserEntry";
 import { RequestJobEntry } from "./RequestJobEntry";
 import { RequestApplicationDetails } from "./RequestApplicationDetails";
-import { RequestDecisionsActionSheet } from "./RequestDecisionsActionSheet";
-import { ActionSheetRef } from "react-native-actions-sheet";
-import { BottomButtonWrapper } from "@/components/shared/BottomButtonBlockWrapper";
+import { RequestDecisions } from "./RequestDecisions";
 
 export interface RequestStatus {
   icon: LucideIcon;
@@ -47,7 +45,6 @@ interface RequestDetailsProps {
 
 export const RequestDetails = ({ className, id }: RequestDetailsProps) => {
   const { currentUser } = useCurrentUser();
-  const decisionsSheetRef = React.useRef<ActionSheetRef>(null);
 
   const {
     request,
@@ -185,30 +182,16 @@ export const RequestDetails = ({ className, id }: RequestDetailsProps) => {
 
           {/* Application Details */}
           <RequestApplicationDetails className="px-4" request={request} />
-          {/* Decisions Block is now inside BottomButtonWrapper below */}
 
-
-          <RequestDecisionsActionSheet
-            ref={decisionsSheetRef}
-            className="mt-4"
+          {/* Decisions Block */}
+          <RequestDecisions
+            className="px-4 mt-4"
             request={request}
             isIncoming={isIncoming}
             refetch={refetch}
           />
         </View>
       </ScrollView>
-      <BottomButtonWrapper>
-        <Button
-          onPress={() => decisionsSheetRef.current?.show()}
-          variant="default"
-          size="lg"
-          className="w-full rounded-xl h-12"
-        >
-          <Text className="font-bold text-primary-foreground text-md">
-            Manage Application
-          </Text>
-        </Button>
-      </BottomButtonWrapper>
     </StableSafeAreaView>
   );
 };

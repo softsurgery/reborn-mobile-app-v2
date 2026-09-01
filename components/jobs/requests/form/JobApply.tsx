@@ -28,6 +28,7 @@ interface JobApplyProps {
 export const JobApply = ({ className, id }: JobApplyProps) => {
   const store = useJobApplyStore();
   const isKeyboardVisible = useKeyboardVisible();
+  const [priceType, setPriceType] = React.useState<"less" | "greater">("less");
 
   React.useEffect(() => {
     return () => {
@@ -53,6 +54,8 @@ export const JobApply = ({ className, id }: JobApplyProps) => {
   const { structure } = useJobApplyFormStructure({
     store,
     job: job,
+    priceType,
+    setPriceType,
   });
 
   const { mutate: sendRequest, isPending: isSendRequestPending } = useMutation({
