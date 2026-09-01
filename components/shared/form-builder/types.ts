@@ -206,3 +206,7 @@ export interface SliderFieldProps {
   label?: string;
   unit?: string;
 }
+
+export interface CustomFieldProps {
+  render: () => React.ReactNode;
+}
