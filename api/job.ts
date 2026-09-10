@@ -62,6 +62,34 @@ const findCurrentPaginated = async ({
   return response.data;
 };
 
+const findWorkPaginated = async ({
+  page = "1",
+  limit = "5",
+  sort,
+  search = "",
+  filter = "",
+  join = "",
+}: QueryParams): Promise<Paginated<ResponseJobDto>> => {
+  const params: { [key: string]: any } = {
+    page,
+    limit,
+    sort,
+  };
+
+  if (search) params.search = search;
+  if (filter) params.filter = filter;
+  if (join) params.join = join;
+
+  const response = await axios.get<Paginated<ResponseJobDto>>(
+    `/current-job/list-work`,
+    {
+      params,
+    },
+  );
+
+  return response.data;
+};
+
 const findFollowedPaginated = async ({
   page = "1",
   limit = "5",
@@ -152,6 +180,16 @@ const remove = async (id?: string): Promise<ResponseJobDto> => {
   return response.data;
 };
 
+const pause = async (id: string): Promise<ResponseJobDto> => {
+  const response = await axios.post<ResponseJobDto>(`/job/${id}/pause`);
+  return response.data;
+};
+
+const unpause = async (id: string): Promise<ResponseJobDto> => {
+  const response = await axios.post<ResponseJobDto>(`/job/${id}/unpause`);
+  return response.data;
+};
+
 const next = async (
   id: string,
   event: string,
@@ -170,11 +208,14 @@ export const job = {
   save,
   update,
   duplicate,
+  pause,
+  unpause,
   remove,
   delete: remove,
   current: {
     findPaginated: findCurrentPaginated,
     findFollowedPaginated,
+    findWorkPaginated,
   },
   workflow: {
     findById: findWorkflowById,

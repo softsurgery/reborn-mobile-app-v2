@@ -1,4 +1,4 @@
-import React from "react";
+import React, { createContext, useContext, useState, ReactNode } from "react";
 import { View, StyleSheet } from "react-native";
 import { Loader } from "@/components/shared/lotties/Loader";
 
@@ -7,12 +7,10 @@ interface LoaderContextType {
   isLoading: boolean;
 }
 
-const LoaderContext = React.createContext<LoaderContextType | undefined>(
-  undefined,
-);
+const LoaderContext = createContext<LoaderContextType | undefined>(undefined);
 
-export const LoaderProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isLoading, setLoading] = React.useState(false);
+export const LoaderProvider = ({ children }: { children: ReactNode }) => {
+  const [isLoading, setLoading] = useState(false);
 
   return (
     <LoaderContext.Provider value={{ isLoading, setLoading }}>
@@ -33,7 +31,7 @@ export const LoaderProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const useLoader = () => {
-  const context = React.useContext(LoaderContext);
+  const context = useContext(LoaderContext);
   if (context === undefined) {
     throw new Error("useLoader must be used within a LoaderProvider");
   }

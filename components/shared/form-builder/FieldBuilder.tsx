@@ -16,15 +16,13 @@ import MapPinField from "./components/MapPinField";
 import { GalleryPictureUploader } from "./gallery-picture-uploader/GalleryPictureUploader";
 import { PasswordField } from "./components/PasswordField";
 import { TimePicker } from "./components/TimePicker";
-import { useColorPalette } from "@/hooks/useColorPalette";
-import { hslToHex } from "@/lib/theme";
+import { Slider } from "./components/Slider";
 
 interface FieldBuilderProps {
   field?: Field<any>;
 }
 
 export const FieldBuilder = ({ field }: FieldBuilderProps) => {
-  const { palette } = useColorPalette();
   const editable = field?.props?.editable ?? true;
 
   switch (field?.variant) {
@@ -139,7 +137,7 @@ export const FieldBuilder = ({ field }: FieldBuilderProps) => {
       );
     case "checkbox":
       return (
-        <View className="flex-row items-center gap-2">
+        <View className="flex-row items-center gap-2 pt-2">
           <Checkbox
             {...field?.props}
             disabled={!editable}
@@ -243,6 +241,20 @@ export const FieldBuilder = ({ field }: FieldBuilderProps) => {
           editable={editable}
         />
       );
+    case "slider":
+      return (
+        <Slider
+          initialValue={field?.props?.initialValue || 0}
+          onValueChange={field?.props?.onValueChange!}
+          rangeMinValue={field?.props?.rangeMinValue}
+          rangeMaxValue={field?.props?.rangeMaxValue}
+          step={field?.props?.step}
+          label={field?.props?.label}
+          unit={field?.props?.unit}
+        />
+      );
+    case "custom":
+      return <>{field?.props?.render?.()}</>;
     default:
       return (
         <Text style={{ color: "red", fontSize: 12 }}>

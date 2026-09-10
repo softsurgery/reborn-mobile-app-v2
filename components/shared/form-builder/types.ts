@@ -54,6 +54,7 @@ export enum FieldVariant {
   RATING = "rating",
   PICTURE = "picture",
   GALLERY = "gallery",
+  SLIDER = "slider",
   CUSTOM = "custom",
 }
 
@@ -159,6 +160,7 @@ export interface ImageFile {
   id: number | string;
   serverId?: number;
   uri: string;
+  headers?: Record<string, string>;
   name: string;
   type: string;
   progress: number;
@@ -192,4 +194,18 @@ export interface SwitchFieldProps {
   checked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
   editable?: boolean;
+}
+
+export interface SliderFieldProps {
+  initialValue?: number;
+  onValueChange?: (value: number) => void;
+  editable?: boolean;
+  rangeMinValue?: number;
+  rangeMaxValue?: number;
+  step?: number;
+  label?: string;
+  unit?: string;
+}
+export interface CustomFieldProps {
+  render: () => React.ReactNode;
 }

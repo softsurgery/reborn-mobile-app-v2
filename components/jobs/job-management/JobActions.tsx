@@ -1,15 +1,16 @@
-import React from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import React, { useRef } from "react";
+import { View, Text, ScrollView } from "react-native";
 import { ActionSheetRef } from "react-native-actions-sheet";
+import { ActionPressable } from "@/components/shared/ActionPressable";
 import { DuplicateJobActionSheet } from "./DuplicateJobActionSheet";
 import { ArchiveJobActionSheet } from "./ArchiveJobActionSheet";
 import { DeleteJobActionSheet } from "./DeleteJobActionSheet";
+import { PauseJobActionSheet } from "./PauseJobActionSheet";
 import { useNextWorkflowJob } from "@/hooks/content/job/workflow/useNextWorkflowJob";
 import { JobEvents, JobStatus } from "@/types";
 import { useJob } from "@/hooks/content/job/useJob";
 import {
   Edit,
-  
   Share2,
   PauseCircle,
   Copy,
@@ -18,7 +19,6 @@ import {
   Calendar,
   Link,
   Archive,
-  ChevronRight,
   X,
 } from "lucide-react-native";
 import { useColorPalette } from "@/hooks/useColorPalette";
@@ -26,6 +26,9 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "expo-router";
 import { useDuplicateJob } from "@/hooks/content/job/useDuplicateJob";
 import { useDeleteJob } from "@/hooks/content/job/useDeleteJob";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/api";
+import { toast } from "sonner-native";
 
 type ActionItem = {
   id: string;
@@ -57,11 +60,34 @@ export const JobActions = ({ id, className }: JobActionsProps) => {
   const router = useRouter();
   const { duplicateJob, isDuplicatingJob } = useDuplicateJob();
   const { deleteJob, isDeletingJob } = useDeleteJob();
-  const duplicateSheetRef = React.useRef<ActionSheetRef>(null);
-  const archiveSheetRef = React.useRef<ActionSheetRef>(null);
-  const deleteSheetRef = React.useRef<ActionSheetRef>(null);
+  const duplicateSheetRef = useRef<ActionSheetRef>(null);
+  const archiveSheetRef = useRef<ActionSheetRef>(null);
+  const deleteSheetRef = useRef<ActionSheetRef>(null);
+  const pauseSheetRef = useRef<ActionSheetRef>(null);
+  const queryClient = useQueryClient();
 
   const { job, refetchJob } = useJob({ id });
+
+  const { mutate: togglePauseJob, isPending: isTogglePausePending } =
+    useMutation({
+      mutationFn: (pauseStatus: boolean) => {
+        if (pauseStatus) {
+          return api.job.pause(id);
+        } else {
+          return api.job.unpause(id);
+        }
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["jobs"] });
+        queryClient.invalidateQueries({ queryKey: ["job", id] });
+        refetchJob();
+      },
+      onError: (error: any) => {
+        toast.error(
+          `Failed to update job status: ${error.response?.data?.message || "Unknown error"}`,
+        );
+      },
+    });
 
   const { nextJobWorkflow, isNextJobWorkflowPending } = useNextWorkflowJob({
     id,
@@ -111,10 +137,20 @@ export const JobActions = ({ id, className }: JobActionsProps) => {
         },
         {
           id: "pause",
-          title: "Pause Applications",
-          description: "Stop accepting new candidate submissions",
+          title: job?.pausedApplication
+            ? "Resume Applications"
+            : "Pause Applications",
+          description: job?.pausedApplication
+            ? "Start accepting new candidate submissions again"
+            : "Stop accepting new candidate submissions",
           Icon: PauseCircle,
-          iconBgClass: "bg-amber-500/10",
+          iconBgClass: job?.pausedApplication
+            ? "bg-emerald-500/10"
+            : "bg-amber-500/10",
+          onPress: () => {
+            pauseSheetRef.current?.show();
+          },
+          disabled: isTogglePausePending,
         },
       ],
     },
@@ -247,37 +283,20 @@ export const JobActions = ({ id, className }: JobActionsProps) => {
           {group.items.map((item, index) => {
             const isLast = index === group.items.length - 1;
             return (
-              <Pressable
+              <ActionPressable
                 key={item.id}
+                title={item.title}
+                description={item.description}
+                IconComp={item.Icon}
                 onPress={item.onPress}
                 disabled={item.disabled}
-                className={cn(
-                  "flex-row items-center justify-between p-4 active:opacity-50",
-                  !isLast ? "border-b border-border/40" : "",
-                  item.disabled ? "opacity-50" : "",
-                )}
-              >
-                <View className="flex-row items-center gap-3.5">
-                  <View
-                    className={`w-9 h-9 rounded-xl items-center justify-center ${item.iconBgClass}`}
-                  >
-                    <item.Icon size={18} color={palette.foreground} />
-                  </View>
-                  <View>
-                    <Text
-                      className={`text-sm ${
-                        item.titleClass || "text-foreground font-semibold"
-                      }`}
-                    >
-                      {item.title}
-                    </Text>
-                    <Text className="text-muted-foreground text-xs">
-                      {item.description}
-                    </Text>
-                  </View>
-                </View>
-                <ChevronRight size={18} color={palette.foreground} />
-              </Pressable>
+                isLast={isLast}
+                classNames={{
+                  wrapper: "p-4",
+                  icon: item.iconBgClass,
+                  title: item.titleClass,
+                }}
+              />
             );
           })}
         </View>
@@ -291,10 +310,12 @@ export const JobActions = ({ id, className }: JobActionsProps) => {
           try {
             const duplicatedJob = await duplicateJob(id);
             duplicateSheetRef.current?.hide();
-            router.push({
-              pathname: "/main/my-space/update-job",
-              params: { id: duplicatedJob.id },
-            });
+            if (duplicatedJob?.id) {
+              router.push({
+                pathname: "/main/my-space/update-job",
+                params: { id: duplicatedJob.id },
+              });
+            }
           } catch (e) {
             console.error(e);
           }
@@ -320,6 +341,16 @@ export const JobActions = ({ id, className }: JobActionsProps) => {
           } catch (e) {
             console.error(e);
           }
+        }}
+      />
+      <PauseJobActionSheet
+        ref={pauseSheetRef}
+        isPending={isTogglePausePending}
+        isPaused={!!job?.pausedApplication}
+        onClose={() => pauseSheetRef.current?.hide()}
+        onConfirm={() => {
+          togglePauseJob(!job?.pausedApplication);
+          pauseSheetRef.current?.hide();
         }}
       />
     </ScrollView>

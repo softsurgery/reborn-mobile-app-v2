@@ -1,6 +1,7 @@
 import React from "react";
 import { cn } from "~/lib/utils";
-import { View, TouchableOpacity, Image } from "react-native";
+import { View, TouchableOpacity } from "react-native";
+import { Image, ImageSource } from "expo-image";
 import {
   Heart,
   ImageOff,
@@ -13,7 +14,6 @@ import { router } from "expo-router";
 import { JobPricingType, ResponseJobDto } from "~/types";
 import { useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
-
 import { Skeleton } from "../ui/skeleton";
 import { timeAgo } from "~/lib/dates.utils";
 import { Text } from "../ui/text";
@@ -22,7 +22,7 @@ import { useIsJobSaved } from "~/hooks/content/job/useIsJobSaved";
 import { Button } from "../ui/button";
 import { Icon } from "../ui/icon";
 import { Badge } from "../ui/badge";
-import { useServerImage } from "@/hooks/content/useServerImage";
+import { useServerImages } from "@/hooks/content/useServerImages";
 import { useColorPalette } from "@/hooks/useColorPalette";
 import { useRTL } from "@/hooks/useRTL";
 import {
@@ -58,13 +58,12 @@ const readCurrency = (job: ResponseJobDto) => {
   };
 };
 
-
 export const JobCard = ({
   className,
   job,
   isOwner,
-  redundantUser = false,
-  onLongPress
+  onLongPress,
+  redundantUser,
 }: JobCardProps) => {
   const queryClient = useQueryClient();
   const { palette } = useColorPalette();
@@ -86,13 +85,18 @@ export const JobCard = ({
   const coverId = orderedUploads?.[0]?.uploadId;
   const extraPhotos = Math.max((orderedUploads?.length ?? 0) - 1, 0);
 
-  const { upload, isUploadPending } = useServerImage({
-    id: coverId,
+  const {
+    uploads: [upload],
+    isPending: isUploadPending,
+  } = useServerImages({
+    ids: [coverId],
     enabled: !!coverId,
   });
 
-  const { upload: authorPicture } = useServerImage({
-    id: job.postedBy?.pictureId,
+  const {
+    uploads: [authorPicture],
+  } = useServerImages({
+    ids: [job.postedBy?.pictureId],
     enabled: !!job.postedBy?.pictureId,
   });
 
@@ -145,9 +149,9 @@ export const JobCard = ({
             <Skeleton className="h-full w-full" />
           ) : coverId && upload ? (
             <Image
-              source={{ uri: upload }}
+              source={upload as ImageSource}
               style={{ width: "100%", height: "100%" }}
-              resizeMode="cover"
+              contentFit="cover"
             />
           ) : (
             <View
@@ -273,7 +277,7 @@ export const JobCard = ({
               style={{ width: 20, height: 20 }}
             >
               {/* Always mounted: AvatarImage is what raises the fallback flag. */}
-              <AvatarImage source={{ uri: authorPicture ?? "" }} />
+              <AvatarImage source={authorPicture as ImageSource} />
               <AvatarFallback>
                 <Text style={{ fontSize: 9 }} className="font-semibold">
                   {identifyUserAvatar(job.postedBy)}

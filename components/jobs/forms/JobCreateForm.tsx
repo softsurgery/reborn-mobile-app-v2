@@ -55,7 +55,7 @@ export const JobCreateForm = ({ className }: JobCreateFormProps) => {
     },
   });
 
-  const { currencies } = useCurrencies();
+  const { currencies, isCurrenciesPending } = useCurrencies();
   const { jobTags, isJobTagsPending } = useJobTags();
   const { jobCategories, isJobCategoriesPending } = useJobCategories();
 
@@ -65,7 +65,6 @@ export const JobCreateForm = ({ className }: JobCreateFormProps) => {
     jobImagePickerStructure,
   } = useCreateJobFormStructure({
     jobStore,
-    currencies,
     jobTags: mapToSelectOptions({
       data: jobTags,
       labelKey: "label",
@@ -92,17 +91,16 @@ export const JobCreateForm = ({ className }: JobCreateFormProps) => {
   });
 
   React.useEffect(() => {
-    if (
-      latitude !== 0 &&
-      longitude !== 0 &&
-      (!jobStore.createDto.latitude || jobStore.createDto.latitude === 0) &&
-      (!jobStore.createDto.longitude || jobStore.createDto.longitude === 0)
-    ) {
-      jobStore.setNested("createDto.latitude", latitude);
-      jobStore.setNested("createDto.longitude", longitude);
-      jobStore.set("locationName", locationName);
-    }
+    jobStore.setNested("createDto.latitude", latitude);
+    jobStore.setNested("createDto.longitude", longitude);
+    jobStore.set("locationName", locationName);
   }, [latitude, longitude, locationName]);
+
+  React.useEffect(() => {
+    if (!currencies) return;
+    const tnd = currencies?.find((c) => c.label === "TND");
+    jobStore.setNested("createDto.currencyId", tnd?.id);
+  }, [currencies]);
 
   const handleSubmit = (status: "Draft" | "Posted") => {
     const uploads = jobStore.images
@@ -174,7 +172,10 @@ export const JobCreateForm = ({ className }: JobCreateFormProps) => {
         ]}
       />
       <View className={cn("flex-1 px-2 bg-background", className)}>
-        {isJobTagsPending || isJobCategoriesPending || isLocationPending ? (
+        {isJobTagsPending ||
+        isJobCategoriesPending ||
+        isLocationPending ||
+        isCurrenciesPending ? (
           <Loader className="flex flex-1 justify-center items-center" />
         ) : (
           <Stepper

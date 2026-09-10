@@ -62,11 +62,31 @@ const updateCover = async (
   return response.data;
 };
 
+const getSkills = async (id: string): Promise<number[] | null> => {
+  const response = await axios.get(`/admin/user/skills/${id}`);
+  return response.data;
+};
+
+const getMobileAppSettings = async (): Promise<any> => {
+  const response = await axios.get(`/current-user/mobile-app-settings`);
+  return response.data;
+};
+
+const updateQuickActions = async (activeIds: string[]): Promise<any> => {
+  const response = await axios.put(`/current-user/mobile-app-settings/quick-actions`, {
+    activeIds,
+  });
+  return response.data;
+};
+
 export const client = {
   findCurrent,
   findById,
   findByUsername,
   findByEmail,
+  getSkills,
   updateCover,
   updateCurrent,
+  getMobileAppSettings,
+  updateQuickActions,
 };

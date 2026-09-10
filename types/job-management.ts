@@ -1,4 +1,4 @@
-import { ResponseRefParamDto } from "./reference-types";
+import { CurrencyPayload, ResponseRefParamDto } from "./reference-types";
 import { Upload } from "./upload";
 import { ResponseUserDto } from "./user-management";
 import { DatabaseEntity } from "./utils";
@@ -46,14 +46,20 @@ export interface ResponseJobDto extends DatabaseEntity {
 
   price: number;
   pricingType: JobPricingType;
+  negotiablePrice: boolean;
+  pausedApplication: boolean;
   currencyId: number;
-  currency: ResponseRefParamDto;
+  currency: ResponseRefParamDto<CurrencyPayload>;
 
   longitude: number;
   latitude: number;
 
   postedBy: ResponseUserDto;
   postedById: string;
+
+  worker?: ResponseUserDto;
+  workerId?: string;
+  assignmentDate?: string;
 
   tags: ResponseRefParamDto[];
   categoryId: number;
@@ -71,6 +77,8 @@ export interface CreateJobDto {
   description: string;
   price?: number;
   pricingType?: JobPricingType;
+  negotiablePrice?: boolean;
+  pausedApplication?: boolean;
   tagIds: number[];
   currencyId?: number;
   categoryId?: number;
@@ -82,7 +90,7 @@ export interface CreateJobDto {
 }
 
 export interface UpdateJobDto extends Partial<CreateJobDto> {
-  uploads?: { id: number; uploadId: number; order: number }[];
+  uploads?: { id?: number; uploadId: number; order: number }[];
 }
 
 export interface ResponseJobWorkflowDto extends ResponseWorkflowDto {
@@ -96,6 +104,52 @@ export interface ResponseJobMetadataDto {
   reviewCount: number;
   rating: number;
   hireRate: number;
+}
+
+// Job Statistics *************************************************************
+
+export interface DailyActivityItem {
+  day: string;
+  date: string;
+  views: number;
+  apps: number;
+  height: string;
+}
+
+export interface FunnelStageItem {
+  label: string;
+  value: string;
+  percent: number;
+  color: string;
+}
+
+export interface ExperienceDistributionItem {
+  level: string;
+  percent: number;
+  color: string;
+}
+
+export interface TrafficSourceItem {
+  source: string;
+  percent: string;
+  count: string;
+}
+
+export interface ResponseJobStatisticsDto {
+  id: string;
+  totalViews: number;
+  totalSaves: number;
+  totalApplications: number;
+  shortlistedCandidates: number;
+  viewsTrend: number;
+  savesTrend: number;
+  applicationsTrend: number;
+  shortlistedTrend: number;
+  aiInsight: string;
+  dailyActivity: DailyActivityItem[];
+  funnelStages: FunnelStageItem[];
+  experienceDistribution: ExperienceDistributionItem[];
+  trafficSources: TrafficSourceItem[];
 }
 
 export interface ResponseJobUploadDto extends DatabaseEntity {
@@ -116,10 +170,14 @@ export interface ResponseJobRequestDto extends DatabaseEntity {
   userId: string;
   user?: ResponseUserDto;
   status: JobRequestStatus;
+  message?: string;
+  proposedPrice?: number;
 }
 
 export interface CreateJobRequestDto {
   jobId: string;
+  message?: string;
+  proposedPrice?: number;
 }
 
 export interface UpdateJobRequestDto extends Partial<CreateJobRequestDto> {}
@@ -175,6 +233,7 @@ export enum JobStyle {
 
 export enum JobRequestStatus {
   Pending = "pending",
+  Waitlist = "waitlist",
   Approved = "approved",
   Rejected = "rejected",
 }

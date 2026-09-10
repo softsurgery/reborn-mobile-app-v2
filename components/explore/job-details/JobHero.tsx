@@ -1,5 +1,6 @@
 import React from "react";
 import { View } from "react-native";
+import { ImageSource } from "expo-image";
 import { UseQueryResult } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BadgeCheck, ShieldOff, Star, Users } from "lucide-react-native";
@@ -10,7 +11,7 @@ import {
   AvatarImage,
 } from "@/components/shared/stables/StableAvatar";
 import { Text } from "~/components/ui/text";
-import { useServerImage } from "~/hooks/content/useServerImage";
+import { useServerImages } from "~/hooks/content/useServerImages";
 import { useColorPalette } from "@/hooks/useColorPalette";
 import { timeAgo } from "~/lib/dates.utils";
 import { identifyUser, identifyUserAvatar } from "~/lib/user.utils";
@@ -25,8 +26,8 @@ interface JobHeroProps {
   className?: string;
   job: ResponseJobDto | null;
   metadata: ResponseJobMetadataDto | null;
-  uploads: string[];
-  imageQueries: UseQueryResult<string, Error>[];
+  uploads?: string[];
+  imageQueries?: UseQueryResult<ImageSource, Error>[];
 }
 
 interface CurrencyExtras {
@@ -68,15 +69,31 @@ export const JobHero = ({
   className,
   job,
   metadata,
-  uploads,
+  uploads: propUploads,
   imageQueries,
 }: JobHeroProps) => {
   const { palette } = useColorPalette();
   const insets = useSafeAreaInsets();
-  const hasImages = imageQueries.length > 0;
 
-  const { upload: authorPicture } = useServerImage({
-    id: job?.postedBy?.pictureId,
+  const uploadIds = React.useMemo(() => {
+    if (!job?.uploads || job.uploads.length === 0) return [];
+    return [...job.uploads]
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .map((u) => u.uploadId);
+  }, [job?.uploads]);
+
+  const { uploads: heroImages } = useServerImages({
+    ids: uploadIds,
+    enabled: uploadIds.length > 0,
+  });
+
+  const hasImages =
+    uploadIds.length > 0 || (!!imageQueries && imageQueries.length > 0);
+
+  const {
+    uploads: [authorPicture],
+  } = useServerImages({
+    ids: [job?.postedBy?.pictureId],
     enabled: !!job?.postedBy?.pictureId,
   });
 
@@ -98,7 +115,8 @@ export const JobHero = ({
     >
       {hasImages && (
         <ImageCarousel
-          uploads={uploads}
+          uploads={propUploads ?? uploadIds.map(String)}
+          images={heroImages}
           imageQueries={imageQueries}
           autoPlay={false}
           heightScale={0.35}
@@ -126,7 +144,7 @@ export const JobHero = ({
             alt={identifyUser(job?.postedBy)}
             style={{ width: 22, height: 22 }}
           >
-            <AvatarImage source={{ uri: authorPicture ?? "" }} />
+            <AvatarImage source={authorPicture as ImageSource} />
             <AvatarFallback>
               <Text style={{ fontSize: 9 }} className="font-semibold">
                 {identifyUserAvatar(job?.postedBy)}

@@ -9,8 +9,13 @@ import { JobStatistics } from "./JobStatistics";
 import { useColorPalette } from "@/hooks/useColorPalette";
 import { AppHeaderBack } from "@/components/shared/AppHeaderBack";
 import { createMaterialTopTabNavigator } from "expo-router/js-top-tabs";
-import { RequestsList } from "@/components/home/my-space/requests/RequestList";
+import { View } from "react-native";
+import { JobSummary } from "./JobSummary";
+import { JobStatistics } from "./JobStatistics";
 import { JobActions } from "./JobActions";
+import { useColorPalette } from "@/hooks/useColorPalette";
+import { AppHeaderBack } from "@/components/shared/AppHeaderBack";
+import { RequestsList } from "@/components/jobs/requests/RequestList";
 
 interface JobManagementInstanceProps {
   id: string;
@@ -75,7 +80,7 @@ export const JobManagementInstance = ({
               tabBarLabel: "Statistics",
             }}
           >
-            {() => <JobStatistics />}
+            {() => <JobStatistics jobId={id} />}
           </Tab.Screen>
           <Tab.Screen
             name="requests"
@@ -88,6 +93,7 @@ export const JobManagementInstance = ({
                 variant="incoming"
                 jobId={id}
                 className="pt-2 mx-4"
+                embedded
               />
             )}
           </Tab.Screen>

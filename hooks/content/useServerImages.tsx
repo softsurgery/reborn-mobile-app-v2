@@ -33,10 +33,7 @@ export const useServerImages = ({
   enabled = true,
 }: UseServerImagesProps) => {
   const uniqueIds = React.useMemo(
-    () =>
-      Array.from(
-        new Set(ids.filter((id) => typeof id === "number")),
-      ) as number[],
+    () => Array.from(new Set(ids.filter((id): id is number => Boolean(id)))),
     [ids],
   );
 
@@ -44,31 +41,39 @@ export const useServerImages = ({
     queries: uniqueIds.map((id) => ({
       queryKey: ["server-image", id],
       queryFn: () => api.upload.getUploadById(id),
-      enabled: enabled,
+      enabled,
+      staleTime: Infinity,
     })),
   });
 
-  // Build a map from ID to query result for O(1) lookups
   const queryMap = React.useMemo(() => {
-    const map = new Map<number, (typeof queries)[0]>();
+    const map = new Map<number, (typeof queries)[number]>();
+
     uniqueIds.forEach((id, index) => {
       map.set(id, queries[index]);
     });
+
     return map;
   }, [uniqueIds, queries]);
 
-  const uploads = uniqueIds.map(
-    (id) => queryMap.get(id)?.data as ImageSource | undefined,
+  const uploads = React.useMemo(
+    () =>
+      ids.map((id) =>
+        id ? (queryMap.get(id)?.data as ImageSource | undefined) : undefined,
+      ),
+    [ids, queryMap],
   );
-  const isPending = queries.some((q) => q.isPending);
+
+  const isPending = queries.some((query) => query.isPending);
 
   const jsxArray = React.useMemo(() => {
     return ids.map((id, index) => {
-      const upload = id !== undefined ? queryMap.get(id)?.data : undefined;
-      const query = id !== undefined ? queryMap.get(id) : undefined;
+      const query = id ? queryMap.get(id) : undefined;
+      const upload = query?.data as ImageSource | undefined;
       const fallback = fallbacks[index];
 
-      if (upload && !query?.isPending) {
+      // Image loaded
+      if (upload) {
         return (
           <View
             key={index}
@@ -91,7 +96,8 @@ export const useServerImages = ({
         );
       }
 
-      if (query?.isFetching && id !== undefined) {
+      // Query is loading
+      if (id && query?.isFetching) {
         return (
           <Skeleton
             key={index}
@@ -104,10 +110,11 @@ export const useServerImages = ({
         );
       }
 
+      // ImageSource fallback
       if (
         fallback &&
         typeof fallback === "object" &&
-        ("uri" in fallback || typeof fallback === "number")
+        ("uri" in fallback || "source" in fallback)
       ) {
         return (
           <View
@@ -131,6 +138,7 @@ export const useServerImages = ({
         );
       }
 
+      // Text fallback
       if (typeof fallback === "string") {
         return (
           <Avatar
@@ -151,14 +159,16 @@ export const useServerImages = ({
         );
       }
 
+      // React element fallback
       if (React.isValidElement(fallback)) {
         return React.cloneElement(fallback, { key: index });
       }
 
+      // Nothing available
       return (
         <Skeleton
-          className={cn(className)}
           key={index}
+          className={cn(className)}
           style={{
             width: size?.width,
             height: size?.height,
@@ -167,9 +177,9 @@ export const useServerImages = ({
       );
     });
   }, [
-    queryMap,
     ids,
     fallbacks,
+    queryMap,
     size,
     className,
     wrapperClassName,

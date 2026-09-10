@@ -125,6 +125,17 @@ const create = async (createJobRequestDto: CreateJobRequestDto) => {
   return response.data;
 };
 
+const update = async (
+  id: number,
+  updateJobRequestDto: Partial<CreateJobRequestDto>,
+) => {
+  const response = await axios.put<ResponseJobRequestDto>(
+    `/job-request/${id}`,
+    updateJobRequestDto,
+  );
+  return response.data;
+};
+
 const approve = async (id: number) => {
   const response = await axios.put<ResponseJobRequestDto>(
     `/job-request/${id}/approve`,
@@ -135,6 +146,13 @@ const approve = async (id: number) => {
 const reject = async (id: number) => {
   const response = await axios.put<ResponseJobRequestDto>(
     `/job-request/${id}/reject`,
+  );
+  return response.data;
+};
+
+const waitlist = async (id: number) => {
+  const response = await axios.put<ResponseJobRequestDto>(
+    `/job-request/${id}/waitlist`,
   );
   return response.data;
 };
@@ -154,7 +172,9 @@ export const jobRequest = {
   findById,
   findRequested,
   create,
+  update,
   approve,
   reject,
+  waitlist,
   cancel,
 };

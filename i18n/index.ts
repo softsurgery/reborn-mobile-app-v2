@@ -18,13 +18,17 @@ import enMenu from "./locales/en/menu.json";
 import frMenu from "./locales/fr/menu.json";
 import arMenu from "./locales/ar/menu.json";
 
+import enFinance from "./locales/en/finance.json";
+import frFinance from "./locales/fr/finance.json";
+import arFinance from "./locales/ar/finance.json";
+
 import enHome from "./locales/en/home.json";
 import frHome from "./locales/fr/home.json";
 import arHome from "./locales/ar/home.json";
 
-import enFinance from "./locales/en/finance.json";
-import frFinance from "./locales/fr/finance.json";
-import arFinance from "./locales/ar/finance.json";
+import enChat from "./locales/en/chat.json";
+import frChat from "./locales/fr/chat.json";
+import arChat from "./locales/ar/chat.json";
 
 const resources = {
   en: {
@@ -32,24 +36,27 @@ const resources = {
     notifications: enNotifications,
     settings: enSettings,
     menu: enMenu,
-    home: enHome,
     finance: enFinance,
+    home: enHome,
+    chat: enChat,
   },
   fr: {
     common: frCommon,
     notifications: frNotifications,
     settings: frSettings,
     menu: frMenu,
-    home: frHome,
     finance: frFinance,
+    home: frHome,
+    chat: frChat,
   },
   ar: {
     common: arCommon,
     notifications: arNotifications,
     settings: arSettings,
     menu: arMenu,
-    home: arHome,
     finance: arFinance,
+    home: arHome,
+    chat: arChat,
   },
 };
 
@@ -61,8 +68,7 @@ i18n.use(initReactI18next).init({
   resources,
   lng: languageCode,
   fallbackLng: "en",
-  ns: ["common", "notifications", "settings", "menu", "home"],
-  ns: ["common", "notifications", "settings", "menu", "finance"],
+  ns: ["common", "notifications", "settings", "menu", "home", "finance", "chat"],
   defaultNS: "common",
   interpolation: { escapeValue: false },
 });

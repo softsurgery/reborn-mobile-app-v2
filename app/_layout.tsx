@@ -3,42 +3,30 @@ import { hslToHex, NAV_THEME, THEME } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "expo-router/react-navigation";
 import React from "react";
-import { Stack, useRootNavigationState } from "expo-router";
-import * as Notifications from "expo-notifications";
+import { Stack, ThemeProvider, useRootNavigationState } from "expo-router";
+import { hslToHex, NAV_THEME, THEME } from "~/lib/theme";
+import "~/global.css";
+import "../i18n";
 import { Platform, View } from "react-native";
-import { useNotifications } from "@/hooks/content/notifications/useNotification";
+import { cn } from "~/lib/utils";
 import { StatusBar } from "expo-status-bar";
 import { PortalHost } from "@rn-primitives/portal";
-import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import * as SplashScreen from "expo-splash-screen";
+import { Toaster } from "sonner-native";
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import "../global.css";
-import "../i18n";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Toaster } from "sonner-native";
-import { KeyboardProvider } from "react-native-keyboard-controller";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { useColorPalette } from "@/hooks/useColorPalette";
-import { asyncStoragePersister, queryClient } from "@/lib/queryClient";
-import { LoaderProvider } from "@/contexts/LoaderContext";
 import { usePreferencePersistStore } from "@/hooks/stores/usePreferencePersistStore";
-import { VideoThumbnailGeneratorHost } from "@/components/shared/VideoThumbnailGeneratorHost";
-import { NotificationType } from "@/types";
-import { NotificationContext } from "@/contexts/NotificationContext";
-
-export { ErrorBoundary } from "expo-router";
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+import * as SplashScreen from "expo-splash-screen";
+import { splashPrevented } from "@/lib/splash-screen";
+import { asyncStoragePersister, queryClient } from "@/lib/query-client";
+import { LoaderProvider } from "@/contexts/LoaderContext";
+import { KeyboardProvider } from "react-native-keyboard-controller";
+export { ErrorBoundary } from "@/components/shared/ErrorBoundary";
+import { useRTL } from "@/hooks/useRTL";
 
 interface RootLayoutContentProps {
   palette: typeof THEME.light | typeof THEME.dark;
@@ -47,25 +35,8 @@ interface RootLayoutContentProps {
 
 function RootLayoutContent({ palette, colorScheme }: RootLayoutContentProps) {
   const insets = useSafeAreaInsets();
-  const {
-    count: notificationCount,
-    notifications,
-    resetCount: resetNotificationCount,
-  } = useNotifications({
-    consequences: {
-      [NotificationType.TEST]: () => {},
-      [NotificationType.NEW_SIGNIN]: () => {},
-      [NotificationType.NEW_MESSAGE]: () => {},
-      [NotificationType.JOB_REQUEST_APPROVED]: () => {},
-      [NotificationType.JOB_REQUEST_REJECTED]: () => {},
-      [NotificationType.NEW_JOB_REQUEST]: () => {},
-      [NotificationType.NEW_FOLLOWER]: () => {
-        queryClient.invalidateQueries({ queryKey: ["followers"] });
-        queryClient.invalidateQueries({ queryKey: ["follow-data-count"] });
-        queryClient.invalidateQueries({ queryKey: ["social-data"] });
-      },
-    },
-  });
+  const isRTL = useRTL();
+
   const [ready, setReady] = React.useState(false);
 
   // Wait for navigation context to load
@@ -79,51 +50,83 @@ function RootLayoutContent({ palette, colorScheme }: RootLayoutContentProps) {
   if (!ready) return null;
 
   return (
-    <KeyboardProvider>
+    <ThemeProvider value={NAV_THEME[colorScheme ?? "light"]}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <NotificationContext.Provider
-          value={{
-            count: notificationCount,
-            notifications,
-            resetCount: resetNotificationCount,
+        <View
+          className={cn("flex-1 light dark:dark bg-background")}
+          style={{
+            paddingBottom: Platform.OS === "ios" ? 0 : insets.bottom,
           }}
         >
-          <View
-            className={cn("flex-1 light dark:dark bg-background")}
-            style={{ paddingBottom: Platform.OS === "ios" ? 0 : insets.bottom }}
-          >
-            <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: {
-                  flex: 1,
-                  backgroundColor: hslToHex(palette.background),
-                },
-                keyboardHandlingEnabled: true,
-                headerStyle: {
-                  backgroundColor: hslToHex(palette.card),
-                },
-                headerTintColor: hslToHex(palette.foreground),
-                headerTitleStyle: {
-                  fontFamily: "Poppins-SemiBold",
-                  fontSize: 18,
-                  color: hslToHex(palette.foreground),
-                },
-              }}
-            />
-            <Toaster
-              duration={1000}
-              style={{
+          <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              animation: isRTL ? "slide_from_left" : "slide_from_right",
+              contentStyle: {
+                flex: 1,
+                backgroundColor: hslToHex(palette.background),
+              },
+              headerStyle: {
                 backgroundColor: hslToHex(palette.card),
-              }}
-            />
-            <PortalHost />
-            <VideoThumbnailGeneratorHost />
-          </View>
-        </NotificationContext.Provider>
+              },
+              headerTintColor: hslToHex(palette.foreground),
+              headerTitleStyle: {
+                fontFamily: "Poppins-SemiBold",
+                fontSize: 18,
+                color: hslToHex(palette.foreground),
+              },
+            }}
+          />
+          <Toaster
+            duration={1000}
+            style={{
+              backgroundColor: hslToHex(palette.card),
+            }}
+          />
+          <PortalHost />
+        </View>
       </GestureHandlerRootView>
-    </KeyboardProvider>
+    </ThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  const { colorScheme, palette } = useColorPalette();
+  const isPreferenceReady = usePreferencePersistStore((state) => state.isReady);
+
+  React.useEffect(() => {
+    if (!isPreferenceReady) return;
+
+    void (async () => {
+      try {
+        await splashPrevented;
+        await SplashScreen.hideAsync();
+      } catch {}
+    })();
+  }, [isPreferenceReady]);
+
+  return (
+    <ThemeProvider value={NAV_THEME[colorScheme ?? "light"]}>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{
+          persister: asyncStoragePersister,
+          maxAge: 1000 * 60 * 60 * 24,
+        }}
+      >
+        <KeyboardProvider statusBarTranslucent>
+          <SafeAreaProvider>
+            <LoaderProvider>
+              <RootLayoutContent
+                colorScheme={colorScheme ?? "light"}
+                palette={palette}
+              />
+            </LoaderProvider>
+          </SafeAreaProvider>
+        </KeyboardProvider>
+      </PersistQueryClientProvider>
+    </ThemeProvider>
   );
 }
 

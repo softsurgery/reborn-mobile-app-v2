@@ -11,12 +11,16 @@ import { cn } from "@/lib/utils";
 import { ResponseEducationDto, ServerErrorResponse } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { GraduationCap, Building2, FileText } from "lucide-react-native";
+import { GraduationCap } from "lucide-react-native";
 import { View } from "react-native";
 import { toast } from "sonner-native";
+import { useRTL } from "@/hooks/useRTL";
+import { EducationInstance } from "./EducationInstance";
 import { DeleteEducationActionSheet } from "./DeleteEducationActionSheet";
 import { ActionSheetRef } from "react-native-actions-sheet";
 import { useTranslation } from "react-i18next";
+import { AppHeaderBack } from "@/components/shared/AppHeaderBack";
+import { useUserStore } from "@/hooks/stores/useUserStore";
 
 import { AppHeaderBack } from "@/components/shared/AppHeaderBack";
 import { useUserStore } from "@/hooks/stores/useUserStore";
@@ -28,6 +32,7 @@ export const UpdateEducations = ({ className }: UpdateEducationsProps) => {
   const { t } = useTranslation("menu");
   const userStore = useUserStore();
   const queryClient = useQueryClient();
+  const isRTL = useRTL();
   const deleteSheetRef = React.useRef<ActionSheetRef>(null);
   const [selectedEducationId, setSelectedEducationId] = React.useState<
     number | null
@@ -35,6 +40,7 @@ export const UpdateEducations = ({ className }: UpdateEducationsProps) => {
 
   const onUpdateEducationPress = (edu: ResponseEducationDto) => {
     userStore.set("responseEducation", edu);
+    userStore.set("present", edu.endDate === null);
     userStore.set("updateEducationDto", {
       title: edu.title,
       institution: edu.institution,
@@ -110,40 +116,15 @@ export const UpdateEducations = ({ className }: UpdateEducationsProps) => {
                     className="bg-card border border-border overflow-hidden shadow-sm"
                   >
                     {/* Content */}
-                    <View className="px-4 py-4 gap-3.5">
-                      {/* Degree/Title */}
-                      <View className="gap-1.5">
-                        <Text className="text-xs font-semibold uppercase text-muted-foreground tracking-wide">
-                          {t("education.list.degreeLabel")}
-                        </Text>
-                        <Text className="text-lg font-bold text-foreground">
-                          {edu.title}
-                        </Text>
-                      </View>
-
-                      {/* Institution */}
-                      <View className="flex flex-row items-center gap-3">
-                        <Icon as={Building2} size={18} />
-                        <Text className="text-base text-muted-foreground flex-1">
-                          {edu.institution}
-                        </Text>
-                      </View>
-
-                      {/* Description */}
-                      {!!edu.description && (
-                        <View className="flex flex-row gap-3">
-                          <Icon as={FileText} size={18} />
-                          <Text className="text-sm text-foreground flex-1 leading-5">
-                            {edu.description}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
+                    <EducationInstance education={edu} className="px-4 py-4" />
 
                     {/* Action Buttons */}
                     <View className="flex flex-col border-t border-border">
                       <Tappable
-                        className="p-4 flex flex-row border-b border-border"
+                        className={cn(
+                          "p-4 flex border-b border-border",
+                          isRTL ? "flex-row-reverse" : "flex-row",
+                        )}
                         classNames={{
                           content: "font-semibold text-sm",
                           pressable: "bg-primary/20",
@@ -153,7 +134,10 @@ export const UpdateEducations = ({ className }: UpdateEducationsProps) => {
                         {t("education.list.actions.edit")}
                       </Tappable>
                       <Tappable
-                        className="p-4 flex flex-row"
+                        className={cn(
+                          "p-4 flex",
+                          isRTL ? "flex-row-reverse" : "flex-row",
+                        )}
                         classNames={{
                           content: "font-semibold text-sm",
                           pressable: "bg-destructive/50",

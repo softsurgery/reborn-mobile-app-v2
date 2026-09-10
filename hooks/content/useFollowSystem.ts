@@ -1,5 +1,4 @@
-import { queryClient } from "@/lib/queryClient";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React from "react";
 import { api } from "~/api";
 
@@ -22,6 +21,7 @@ export function useFollowSystem({
   follow,
   unfollow,
 }: useFollowSystemProps) {
+  const queryClient = useQueryClient();
   const {
     data: isFollowingResp,
     isPending: isIsFollowingPending,

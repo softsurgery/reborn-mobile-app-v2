@@ -123,6 +123,9 @@ export const Home = ({ className }: HomeProps) => {
     if (status === JobRequestStatus.Rejected) {
       return "bg-destructive/10 text-destructive";
     }
+    if (status === JobRequestStatus.Waitlist) {
+      return "bg-blue-500/10 text-blue-500";
+    }
     return "bg-secondary text-secondary-foreground";
   };
 
@@ -237,11 +240,6 @@ export const Home = ({ className }: HomeProps) => {
           </View>
 
           <View className="rounded-2xl border border-border bg-card p-4 mt-3">
-            <View>
-              <Text className="text-lg font-semibold">
-                {t("quickActions.title")}
-              </Text>
-            </View>
             <QuickActions />
           </View>
 

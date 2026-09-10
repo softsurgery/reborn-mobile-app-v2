@@ -1,5 +1,6 @@
 import React from "react";
-import { Modal, Pressable, View, Image, TouchableOpacity } from "react-native";
+import { Modal, Pressable, View, TouchableOpacity } from "react-native";
+import { Image, ImageSource } from "expo-image";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -21,7 +22,7 @@ import {
 import { Text } from "../ui/text";
 import { JobPricingType, ResponseJobDto } from "~/types";
 import { useColorPalette } from "@/hooks/useColorPalette";
-import { useServerImage } from "@/hooks/content/useServerImage";
+import { useServerImages } from "@/hooks/content/useServerImages";
 import { identifyUser, identifyUserAvatar } from "~/lib/user.utils";
 import { timeAgo } from "~/lib/dates.utils";
 import {
@@ -70,13 +71,17 @@ export const JobPreviewModal = ({
 
   const coverId = orderedUploads?.[0]?.uploadId;
 
-  const { upload } = useServerImage({
-    id: coverId,
+  const {
+    uploads: [upload],
+  } = useServerImages({
+    ids: [coverId],
     enabled: !!coverId,
   });
 
-  const { upload: authorPicture } = useServerImage({
-    id: job?.postedBy?.pictureId,
+  const {
+    uploads: [authorPicture],
+  } = useServerImages({
+    ids: [job?.postedBy?.pictureId],
     enabled: !!job?.postedBy?.pictureId,
   });
 
@@ -204,7 +209,7 @@ export const JobPreviewModal = ({
           className="w-full max-w-sm flex-col items-center z-10"
         >
           {/* Main Floating Preview Card */}
-          <View className="w-full bg-card rounded-3xl border border-border p-4 shadow-2xl overflow-hidden rounded-xl">
+          <View className="w-full bg-card border border-border p-4 shadow-2xl overflow-hidden rounded-xl">
             {/* Header: Author + Timestamp + Close button */}
             <View className="flex-row items-start justify-between mb-3 pb-2 border-b border-border/60">
               <View className="flex-row items-start gap-2.5 flex-1">
@@ -212,7 +217,7 @@ export const JobPreviewModal = ({
                   alt={identifyUser(job.postedBy)}
                   style={{ width: 34, height: 34 }}
                 >
-                  <AvatarImage source={{ uri: authorPicture ?? "" }} />
+                  <AvatarImage source={authorPicture as ImageSource} />
                   <AvatarFallback>
                     <Text style={{ fontSize: 12 }} className="font-semibold">
                       {identifyUserAvatar(job.postedBy)}
@@ -232,27 +237,33 @@ export const JobPreviewModal = ({
                   </Text>
                 </View>
               </View>
-                <TouchableOpacity
-                  onPress={() => handleDismiss()}
-                  className="p-1 rounded-full bg-muted/80"
-                  hitSlop={8}
-                >
-                  <X size={16} color={palette.foreground} />
-                </TouchableOpacity>         
+              <TouchableOpacity
+                onPress={() => handleDismiss()}
+                className="p-1 rounded-full bg-muted/80"
+                hitSlop={8}
+              >
+                <X size={16} color={palette.foreground} />
+              </TouchableOpacity>
             </View>
 
             {/* Cover Image */}
             <View className="w-full h-40 rounded-xl overflow-hidden bg-muted mb-3 justify-center items-center">
               {coverId && upload ? (
                 <Image
-                  source={{ uri: upload }}
+                  source={upload as ImageSource}
                   style={{ width: "100%", height: "100%" }}
-                  resizeMode="cover"
+                  contentFit="cover"
                 />
               ) : (
                 <View className="items-center justify-center gap-1">
-                  <ImageOff size={24} color={palette.mutedForeground} opacity={0.5} />
-                  <Text className="text-xs text-muted-foreground">No Preview Image</Text>
+                  <ImageOff
+                    size={24}
+                    color={palette.mutedForeground}
+                    opacity={0.5}
+                  />
+                  <Text className="text-xs text-muted-foreground">
+                    No Preview Image
+                  </Text>
                 </View>
               )}
             </View>
@@ -295,7 +306,10 @@ export const JobPreviewModal = ({
                   {job.style && (
                     <View className="flex-row items-center gap-1 rounded-full bg-muted px-2 py-1">
                       <MapPin size={10} color={palette.mutedForeground} />
-                      <Text style={{ fontSize: 10 }} className="font-medium text-muted-foreground">
+                      <Text
+                        style={{ fontSize: 10 }}
+                        className="font-medium text-muted-foreground"
+                      >
                         {job.style}
                       </Text>
                     </View>
@@ -303,7 +317,10 @@ export const JobPreviewModal = ({
                   {job.difficulty && (
                     <View className="flex-row items-center gap-1 rounded-full bg-muted px-2 py-1">
                       <Signal size={10} color={palette.mutedForeground} />
-                      <Text style={{ fontSize: 10 }} className="font-medium text-muted-foreground">
+                      <Text
+                        style={{ fontSize: 10 }}
+                        className="font-medium text-muted-foreground"
+                      >
                         {job.difficulty}
                       </Text>
                     </View>
